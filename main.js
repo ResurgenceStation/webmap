@@ -208,11 +208,8 @@ function updateParallax() {
         const x = PARALLAX_BASES[i][0] + dx * s;
         const y = PARALLAX_BASES[i][1] + dy * s;
         if (PARALLAX_CENTER.has(i)) {
-            // CSS `<percentage>` in background-position aligns the image's
-            // own percentage point with the element's percentage point, so
-            // 50% 50% always centres regardless of image vs element size.
-            // Drift in px is added to that anchor.
-            return `calc(50% + ${x.toFixed(0)}px) calc(50% + ${y.toFixed(0)}px)`;
+            // 30%/30% biases the planet 20% up-and-left of viewport centre.
+            return `calc(30% + ${x.toFixed(0)}px) calc(30% + ${y.toFixed(0)}px)`;
         }
         return `${x.toFixed(0)}px ${y.toFixed(0)}px`;
     });
