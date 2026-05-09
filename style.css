@@ -111,15 +111,16 @@ body {
     font-size: 12px;
 }
 
-.entry-name { font-weight: 600; color: #fff; word-break: break-word; }
+.entry-name { font-weight: 600; color: #fff; }
 .entry-coord { color: #888; font-size: 10px; margin-left: 6px; }
-.entry-desc { color: #bbb; margin-top: 4px; word-break: break-word; }
+.entry-desc { color: #bbb; margin-top: 4px; }
 .entry-type {
     color: #6699bb;
     font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
     font-size: 10px;
-    /* SS13 type paths can be 80+ chars; let them wrap mid-path. */
-    word-break: break-all;
+    /* Type paths can be 80+ chars. overflow-wrap (not break-all) lets the
+       browser wrap *only* if the path doesn't fit the available width, so
+       short paths stay on one line. */
     overflow-wrap: anywhere;
 }
 .entry-cat {
@@ -152,19 +153,43 @@ body {
 }
 
 /* Per-z-level background. Body data-zname is set by switchZ in main.js.
-   Station and CentCom use the actual game parallax sprite layers from
-   icons/effects/parallax.dmi (extracted to vendor/parallax_*.png). Lavaland
-   gets a red volcanic glow. */
+   Layer order matches the in-game parallax composition from
+   code/_onclick/hud/parallax.dm:22-29 -- back to front:
+       layer_1 -> layer_2 -> planet -> space_gas -> galaxy -> layer_3
+   CSS background-image paints first-listed on top, so the list below is in
+   reverse (front to back). Star layers tile; planet and galaxy are scenic
+   one-offs and don't repeat. */
 body[data-zname="station"] #map,
 body[data-zname="centcom"] #map {
     background-color: #04040a;
     background-image:
         url('vendor/parallax_layer3.png'),
+        url('vendor/parallax_galaxy.png'),
+        url('vendor/parallax_space_gas.png'),
+        url('vendor/parallax_planet.png'),
         url('vendor/parallax_layer2.png'),
-        url('vendor/parallax_layer1.png'),
-        url('vendor/parallax_space_gas.png');
-    background-repeat: repeat, repeat, repeat, repeat;
-    background-size: 480px 480px, 480px 480px, 480px 480px, 480px 480px;
+        url('vendor/parallax_layer1.png');
+    background-repeat:
+        repeat,
+        no-repeat,
+        repeat,
+        no-repeat,
+        repeat,
+        repeat;
+    background-position:
+        0 0,
+        18% 28%,
+        0 0,
+        72% 64%,
+        0 0,
+        0 0;
+    background-size:
+        480px 480px,
+        480px 480px,
+        480px 480px,
+        480px 480px,
+        480px 480px,
+        480px 480px;
     image-rendering: pixelated;
 }
 
@@ -176,33 +201,16 @@ body[data-zname="lavaland"] #map {
         #1a0a05;
 }
 
-/* Pixel-art tiles: nearest-neighbour upscale, no antialiasing, no seams.
-   The transform/outline/will-change combo is the proven Chrome fix for the
-   1px gap that appears between tiles at non-1x zoom levels (subpixel
-   rounding). Edge/Firefox don't need it but it's harmless. */
-.leaflet-tile,
-.leaflet-tile-container img {
-    image-rendering: -webkit-optimize-contrast;
-    image-rendering: -moz-crisp-edges;
+/* Pixel-art tiles. Match slimbus exactly: just image-rendering, nothing else.
+   Earlier attempts at transform/outline/will-change made it worse in Chrome. */
+img {
     image-rendering: crisp-edges;
     image-rendering: pixelated;
-    /* Force GPU compositing and consistent subpixel snapping. */
-    transform: translateZ(0);
-    backface-visibility: hidden;
-    will-change: transform;
-    /* A 1px transparent outline expands the rasterised box without changing
-       layout, so neighbouring tiles overlap by 1px and Chrome's gap vanishes. */
-    outline: 1px solid transparent;
 }
 
-/* Ensure the tile pane snaps to integer pixel positions on the GPU. */
-.leaflet-tile-pane,
-.leaflet-layer {
-    transform: translateZ(0);
-}
-
-/* Leaflet tooltip override — slightly more padding, dark theme.
-   max-width caps the tooltip; word-break on entry-type wraps long paths. */
+/* Leaflet tooltip override — dark theme, comfortable width. min-width
+   guarantees the box doesn't collapse to a thin column when the only long
+   token is a wrappable type path. */
 .leaflet-tooltip.webmap-tip {
     background: rgba(20, 20, 25, 0.95);
     color: #eee;
@@ -210,9 +218,9 @@ body[data-zname="lavaland"] #map {
     box-shadow: 0 4px 12px rgba(0,0,0,0.6);
     padding: 6px 8px;
     font-size: 12px;
-    max-width: 320px;
+    min-width: 320px;
+    max-width: 480px;
     white-space: normal;
-    word-break: break-word;
     overflow-wrap: anywhere;
 }
 .leaflet-tooltip.webmap-tip:before { display: none; }
