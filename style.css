@@ -184,32 +184,32 @@ body[data-zname="station"] #map,
 body[data-zname="centcom"] #map {
     background-color: #04040a;
     background-image:
-        url('vendor/parallax_planet.png'),    /* layer 30, top */
-        url('vendor/parallax_asteroids.png'), /* layer 3 random */
-        url('vendor/parallax_space_gas.png'), /* layer 3 random */
-        url('vendor/parallax_layer3.png'),    /* layer 3 stars */
-        url('vendor/parallax_layer2.png'),    /* layer 2 stars */
-        url('vendor/parallax_galaxy.png'),    /* layer 1 galaxy A */
-        url('vendor/parallax_galaxy3.png'),   /* layer 1 galaxy B */
-        url('vendor/parallax_layer1.png');    /* layer 1 stars, deepest */
+        url('vendor/parallax_layer3.png'),    /* closest stars - front */
+        url('vendor/parallax_asteroids.png'), /* tiled asteroid field */
+        url('vendor/parallax_space_gas.png'), /* tiled nebula */
+        url('vendor/parallax_layer2.png'),    /* mid stars */
+        url('vendor/parallax_galaxy.png'),    /* galaxy A */
+        url('vendor/parallax_galaxy3.png'),   /* galaxy B */
+        url('vendor/parallax_layer1.png'),    /* deepest stars */
+        url('vendor/parallax_planet.png');    /* planet - back */
     background-repeat:
-        no-repeat,      /* planet */
-        no-repeat,      /* asteroids - single anchor away from planet */
-        repeat,         /* space_gas */
         repeat,         /* layer3 */
+        repeat,         /* asteroids - tiled */
+        repeat,         /* space_gas - tiled */
         repeat,         /* layer2 */
         no-repeat,      /* galaxy */
         no-repeat,      /* galaxy3 */
-        repeat;         /* layer1 */
+        repeat,         /* layer1 */
+        no-repeat;      /* planet */
     background-size:
-        1440px 1440px,  /* planet — 3x natural, dominant centerpiece */
-        960px 960px,    /* asteroids — sparse tiling */
-        720px 720px,    /* space_gas — soft nebula */
         480px 480px,    /* layer3 */
+        960px 960px,    /* asteroids */
+        720px 720px,    /* space_gas */
         480px 480px,    /* layer2 */
         480px 480px,    /* galaxy */
         480px 480px,    /* galaxy3 */
-        480px 480px;    /* layer1 */
+        480px 480px,    /* layer1 */
+        1440px 1440px;  /* planet - big, in the back */
     image-rendering: pixelated;
 }
 
