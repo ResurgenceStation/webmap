@@ -125,10 +125,6 @@ function populateLayerFilters() {
 const TILE_BOUNDS = [[-256, 0], [0, 256]];
 
 function initLeaflet() {
-    // maxZoom: 9 with maxNativeZoom: 5 lets the user zoom in 4 levels past
-    // the natural pyramid for close inspection. The seam-on-zoom issue we
-    // saw earlier was a different bug (Leaflet's plus-lighter blend against
-    // the parallax) and is fixed in style.css.
     state.map = L.map($map, {
         crs: L.CRS.Simple,
         minZoom: 0,
@@ -141,6 +137,58 @@ function initLeaflet() {
     state.map.setView([-128, 128], 2);
     state.map.on("mousemove", onMouseMove);
     state.map.on("click",     onMapClick);
+    state.map.on("move zoom", updateParallax);
+    updateParallax();
+}
+
+// ─── Parallax: pan the per-z background layers at varying speeds ───────────
+//
+// Order matches the CSS background-image stack (front to back):
+//   0: layer3, 1: galaxy, 2: galaxy3, 3: asteroids, 4: space_gas,
+//   5: planet, 6: layer2, 7: layer1
+//
+// Speed is the fraction of the map pan a layer reflects. Real game speeds
+// from code/_onclick/hud/parallax.dm: layer1=0.6, layer2=1.0, layer3=1.4,
+// random=3, galaxy=1, planet=3. We compress them so even the fastest
+// (closest) layer moves slower than the map content (closer-than-the-map
+// would feel wrong), and divide the slowest down so distant stars feel
+// almost stationary.
+const PARALLAX_SPEEDS = [
+    0.55, // layer3   - close stars
+    0.10, // galaxy   - very far
+    0.10, // galaxy3  - very far
+    0.45, // asteroids
+    0.30, // space_gas (nebula)
+    0.18, // planet
+    0.40, // layer2
+    0.25, // layer1   - deepest stars
+];
+
+// Anchor positions for the no-repeat layers (galaxy, galaxy3, planet)
+// so they sit at scenic spots when the map is centred.
+const PARALLAX_BASES = [
+    [0, 0],          // layer3
+    [-340, -180],    // galaxy
+    [380, 220],      // galaxy3
+    [0, 0],          // asteroids
+    [0, 0],          // space_gas
+    [220, -160],     // planet
+    [0, 0],          // layer2
+    [0, 0],          // layer1
+];
+
+function updateParallax() {
+    if (!state.map) return;
+    // Internal API but stable across Leaflet 1.x: pixel offset of the map
+    // pane relative to the container. Negative as the user pans content
+    // toward positive screen coords.
+    const pos = state.map._getMapPanePos();
+    const parts = PARALLAX_SPEEDS.map((s, i) => {
+        const x = PARALLAX_BASES[i][0] + pos.x * s;
+        const y = PARALLAX_BASES[i][1] + pos.y * s;
+        return `${x.toFixed(0)}px ${y.toFixed(0)}px`;
+    });
+    $map.style.backgroundPosition = parts.join(", ");
 }
 
 function buildTileLayer(z) {
