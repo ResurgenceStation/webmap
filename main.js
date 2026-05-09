@@ -130,7 +130,8 @@ function initLeaflet() {
         minZoom: 0,
         maxZoom: 9,
         maxBounds: [[-300, -50], [50, 305]],
-        zoomSnap: 0.25,
+        // Default zoomSnap (1). Fractional zooms break pixel-perfect tile
+        // alignment and visibly seam adjacent tiles -- match slimbus.
         attributionControl: false,
         preferCanvas: true,
     });
@@ -149,9 +150,6 @@ function buildTileLayer(z) {
         maxNativeZoom: 5,
         noWrap: true,
         tms: false,
-        // Pixel-art tiles. Tells Leaflet to keep nearest-neighbour upscaling
-        // and stops the half-pixel seams between adjacent tiles.
-        className: "pixelated",
     });
 }
 
@@ -159,6 +157,11 @@ async function switchZ(z) {
     setStatus(`switching to z=${z}…`);
     state.currentZ = z;
     $zSelect.value = z;
+
+    // Tag body so CSS can swap the under-map background per environment
+    // (stars for station/centcom, lava glow for lavaland).
+    const zlName = (state.manifest.z_levels.find(x => x.id === z) || {}).name || "";
+    document.body.dataset.zname = zlName.toLowerCase();
 
     // Swap raster layer.
     if (state.tileLayer) state.map.removeLayer(state.tileLayer);

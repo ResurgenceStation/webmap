@@ -137,19 +137,54 @@ body {
 
 #map {
     grid-area: map;
-    background: #000;
     cursor: crosshair;
+    background: #000;
+    background-size: 512px 512px;
+    background-repeat: repeat;
+    background-attachment: local;
+}
+
+/* Per-z-level background. Body data-zname is set by switchZ in main.js. */
+body[data-zname="station"] #map,
+body[data-zname="centcom"] #map {
+    background-image:
+        radial-gradient(1px 1px at 17px 23px,   rgba(255,255,255,0.85), transparent),
+        radial-gradient(1px 1px at 89px 41px,   rgba(200,220,255,0.7),  transparent),
+        radial-gradient(1px 1px at 211px 87px,  rgba(255,255,255,0.6),  transparent),
+        radial-gradient(2px 2px at 53px 137px,  rgba(255,255,255,0.55), transparent),
+        radial-gradient(1px 1px at 287px 167px, rgba(180,200,255,0.55), transparent),
+        radial-gradient(1px 1px at 401px 211px, rgba(255,235,200,0.5),  transparent),
+        radial-gradient(1px 1px at 167px 313px, rgba(255,255,255,0.45), transparent),
+        radial-gradient(2px 2px at 343px 379px, rgba(220,230,255,0.6),  transparent),
+        radial-gradient(1px 1px at 463px 449px, rgba(255,255,255,0.4),  transparent),
+        radial-gradient(1px 1px at 67px  461px, rgba(180,180,220,0.5),  transparent),
+        radial-gradient(1px 1px at 257px 491px, rgba(255,255,255,0.5),  transparent),
+        radial-gradient(ellipse at 30% 25%, rgba(40, 30, 70, 0.45) 0%, transparent 55%),
+        radial-gradient(ellipse at 75% 70%, rgba(20, 40, 80, 0.4) 0%, transparent 60%),
+        #04040a;
+    background-size:
+        512px 512px, 512px 512px, 512px 512px, 512px 512px, 512px 512px,
+        512px 512px, 512px 512px, 512px 512px, 512px 512px, 512px 512px, 512px 512px,
+        100% 100%, 100% 100%, auto;
+}
+
+body[data-zname="lavaland"] #map {
+    background:
+        radial-gradient(ellipse at 50% 50%, rgba(160, 50, 10, 0.45) 0%, transparent 70%),
+        radial-gradient(ellipse at 20% 80%, rgba(120, 40, 10, 0.4) 0%, transparent 55%),
+        radial-gradient(ellipse at 80% 20%, rgba(80, 30, 10, 0.5) 0%, transparent 60%),
+        #1a0a05;
 }
 
 /* Pixel-art tiles: nearest-neighbour upscale, no antialiasing, no seams.
-   The pixelated class is set on the tileLayer; Leaflet adds it to every
-   <img>. Both selectors so it works whether Leaflet puts the class on the
-   tile element or its container. */
-.leaflet-tile.pixelated,
-.pixelated .leaflet-tile {
-    image-rendering: pixelated;
+   Apply unconditionally to every Leaflet tile image -- this matches slimbus
+   and is what makes adjacent tiles stitch flush instead of showing seams. */
+.leaflet-tile,
+.leaflet-tile-container img {
+    image-rendering: -webkit-optimize-contrast;
     image-rendering: -moz-crisp-edges;
     image-rendering: crisp-edges;
+    image-rendering: pixelated;
 }
 
 /* Leaflet tooltip override — slightly more padding, dark theme. */
