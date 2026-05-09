@@ -262,17 +262,39 @@ function escapeHtml(s) {
         c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 }
 
+// Collapse runs of identical type+name+desc entries into {entry, count}.
+// SS13 maps frequently stack 2-3 of the same decal/cable on one tile.
+function dedupeEntries(entries) {
+    const out = [];
+    for (const e of entries) {
+        const key = `${e.type}\0${e.name || ""}\0${e.desc || ""}`;
+        const last = out[out.length - 1];
+        if (last && last._key === key) {
+            last.count++;
+        } else {
+            out.push({ ...e, count: 1, _key: key });
+        }
+    }
+    return out;
+}
+
 function renderTooltipHTML(tile, entries) {
-    const truncated = entries.length > TOOLTIP_MAX_ENTRIES;
-    const rows = entries.slice(0, TOOLTIP_MAX_ENTRIES).map(e => `
+    const collapsed = dedupeEntries(entries);
+    const truncated = collapsed.length > TOOLTIP_MAX_ENTRIES;
+    const rows = collapsed.slice(0, TOOLTIP_MAX_ENTRIES).map(e => {
+        const hasName = !!e.name;
+        const headline = hasName ? escapeHtml(e.name) : escapeHtml(e.type);
+        // If we're using the type as the headline, don't show it again below.
+        const typeLine = hasName ? `<div class="entry-type">${escapeHtml(e.type)}</div>` : "";
+        const countTag = e.count > 1 ? ` <span class="entry-count">×${e.count}</span>` : "";
+        return `
         <div class="tip-entry">
-            <span class="entry-name">${escapeHtml(e.name) || escapeHtml(e.type)}</span>
-            <span class="entry-cat">${escapeHtml(e.category)}</span>
+            <span class="entry-name">${headline}</span><span class="entry-cat">${escapeHtml(e.category)}</span>${countTag}
             ${e.desc ? `<div class="entry-desc">${escapeHtml(e.desc)}</div>` : ""}
-            <div class="entry-type">${escapeHtml(e.type)}</div>
-        </div>
-    `).join("");
-    const more = truncated ? `<div class="tip-coord">+${entries.length - TOOLTIP_MAX_ENTRIES} more…</div>` : "";
+            ${typeLine}
+        </div>`;
+    }).join("");
+    const more = truncated ? `<div class="tip-coord">+${collapsed.length - TOOLTIP_MAX_ENTRIES} more…</div>` : "";
     return `<div class="tip-coord">(${tile.x}, ${tile.y}, ${state.currentZ})</div>${rows}${more}`;
 }
 

@@ -132,6 +132,16 @@ body {
     font-size: 10px;
     margin-left: 4px;
 }
+.entry-count {
+    display: inline-block;
+    padding: 0 5px;
+    border-radius: 2px;
+    background: #1f3a4a;
+    color: #cfe;
+    font-size: 10px;
+    margin-left: 4px;
+    font-weight: 600;
+}
 
 .pin-remove, .result-jump {
     cursor: pointer;
