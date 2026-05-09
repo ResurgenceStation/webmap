@@ -111,10 +111,17 @@ body {
     font-size: 12px;
 }
 
-.entry-name { font-weight: 600; color: #fff; }
+.entry-name { font-weight: 600; color: #fff; word-break: break-word; }
 .entry-coord { color: #888; font-size: 10px; margin-left: 6px; }
-.entry-desc { color: #bbb; margin-top: 4px; }
-.entry-type { color: #6699bb; font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 10px; }
+.entry-desc { color: #bbb; margin-top: 4px; word-break: break-word; }
+.entry-type {
+    color: #6699bb;
+    font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+    font-size: 10px;
+    /* SS13 type paths can be 80+ chars; let them wrap mid-path. */
+    word-break: break-all;
+    overflow-wrap: anywhere;
+}
 .entry-cat {
     display: inline-block;
     padding: 0 5px;
@@ -144,28 +151,21 @@ body {
     background-attachment: local;
 }
 
-/* Per-z-level background. Body data-zname is set by switchZ in main.js. */
+/* Per-z-level background. Body data-zname is set by switchZ in main.js.
+   Station and CentCom use the actual game parallax sprite layers from
+   icons/effects/parallax.dmi (extracted to vendor/parallax_*.png). Lavaland
+   gets a red volcanic glow. */
 body[data-zname="station"] #map,
 body[data-zname="centcom"] #map {
+    background-color: #04040a;
     background-image:
-        radial-gradient(1px 1px at 17px 23px,   rgba(255,255,255,0.85), transparent),
-        radial-gradient(1px 1px at 89px 41px,   rgba(200,220,255,0.7),  transparent),
-        radial-gradient(1px 1px at 211px 87px,  rgba(255,255,255,0.6),  transparent),
-        radial-gradient(2px 2px at 53px 137px,  rgba(255,255,255,0.55), transparent),
-        radial-gradient(1px 1px at 287px 167px, rgba(180,200,255,0.55), transparent),
-        radial-gradient(1px 1px at 401px 211px, rgba(255,235,200,0.5),  transparent),
-        radial-gradient(1px 1px at 167px 313px, rgba(255,255,255,0.45), transparent),
-        radial-gradient(2px 2px at 343px 379px, rgba(220,230,255,0.6),  transparent),
-        radial-gradient(1px 1px at 463px 449px, rgba(255,255,255,0.4),  transparent),
-        radial-gradient(1px 1px at 67px  461px, rgba(180,180,220,0.5),  transparent),
-        radial-gradient(1px 1px at 257px 491px, rgba(255,255,255,0.5),  transparent),
-        radial-gradient(ellipse at 30% 25%, rgba(40, 30, 70, 0.45) 0%, transparent 55%),
-        radial-gradient(ellipse at 75% 70%, rgba(20, 40, 80, 0.4) 0%, transparent 60%),
-        #04040a;
-    background-size:
-        512px 512px, 512px 512px, 512px 512px, 512px 512px, 512px 512px,
-        512px 512px, 512px 512px, 512px 512px, 512px 512px, 512px 512px, 512px 512px,
-        100% 100%, 100% 100%, auto;
+        url('vendor/parallax_layer3.png'),
+        url('vendor/parallax_layer2.png'),
+        url('vendor/parallax_layer1.png'),
+        url('vendor/parallax_space_gas.png');
+    background-repeat: repeat, repeat, repeat, repeat;
+    background-size: 480px 480px, 480px 480px, 480px 480px, 480px 480px;
+    image-rendering: pixelated;
 }
 
 body[data-zname="lavaland"] #map {
@@ -177,17 +177,32 @@ body[data-zname="lavaland"] #map {
 }
 
 /* Pixel-art tiles: nearest-neighbour upscale, no antialiasing, no seams.
-   Apply unconditionally to every Leaflet tile image -- this matches slimbus
-   and is what makes adjacent tiles stitch flush instead of showing seams. */
+   The transform/outline/will-change combo is the proven Chrome fix for the
+   1px gap that appears between tiles at non-1x zoom levels (subpixel
+   rounding). Edge/Firefox don't need it but it's harmless. */
 .leaflet-tile,
 .leaflet-tile-container img {
     image-rendering: -webkit-optimize-contrast;
     image-rendering: -moz-crisp-edges;
     image-rendering: crisp-edges;
     image-rendering: pixelated;
+    /* Force GPU compositing and consistent subpixel snapping. */
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    will-change: transform;
+    /* A 1px transparent outline expands the rasterised box without changing
+       layout, so neighbouring tiles overlap by 1px and Chrome's gap vanishes. */
+    outline: 1px solid transparent;
 }
 
-/* Leaflet tooltip override — slightly more padding, dark theme. */
+/* Ensure the tile pane snaps to integer pixel positions on the GPU. */
+.leaflet-tile-pane,
+.leaflet-layer {
+    transform: translateZ(0);
+}
+
+/* Leaflet tooltip override — slightly more padding, dark theme.
+   max-width caps the tooltip; word-break on entry-type wraps long paths. */
 .leaflet-tooltip.webmap-tip {
     background: rgba(20, 20, 25, 0.95);
     color: #eee;
@@ -197,6 +212,8 @@ body[data-zname="lavaland"] #map {
     font-size: 12px;
     max-width: 320px;
     white-space: normal;
+    word-break: break-word;
+    overflow-wrap: anywhere;
 }
 .leaflet-tooltip.webmap-tip:before { display: none; }
 
