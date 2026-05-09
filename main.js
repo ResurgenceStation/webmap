@@ -143,49 +143,54 @@ function initLeaflet() {
 
 // ─── Parallax: pan the per-z background layers at varying speeds ───────────
 //
-// Order matches the CSS background-image stack (front to back):
-//   0: layer3, 1: galaxy, 2: galaxy3, 3: asteroids, 4: space_gas,
-//   5: planet, 6: layer2, 7: layer1
+// Order matches the CSS background-image stack (front to back), which is
+// reversed from BYOND's add-order in code/_onclick/hud/parallax.dm so the
+// game's higher `layer` values end up on top in CSS:
+//   0: planet, 1: asteroids, 2: space_gas, 3: layer3, 4: layer2,
+//   5: galaxy, 6: galaxy3, 7: layer1
 //
-// Speed is the fraction of the map pan a layer reflects. Real game speeds
-// from code/_onclick/hud/parallax.dm: layer1=0.6, layer2=1.0, layer3=1.4,
-// random=3, galaxy=1, planet=3. We compress them so even the fastest
-// (closest) layer moves slower than the map content (closer-than-the-map
-// would feel wrong), and divide the slowest down so distant stars feel
-// almost stationary.
+// Real game speeds: layer1=0.6, layer2=1.0, layer3=1.4, random=3, galaxy=1,
+// planet=3. The user wants the planet to drift only slightly and the
+// galaxies to stay static, so those overrides apply. Star/asteroid layers
+// match the game's relative ordering (deeper -> slower).
 const PARALLAX_SPEEDS = [
-    0.55, // layer3   - close stars
-    0.00, // galaxy   - static, infinitely far
-    0.00, // galaxy3  - static, infinitely far
-    0.30, // asteroids - mid-distance, less prominent than close stars
-    0.22, // space_gas (nebula) - distant gas
-    0.05, // planet   - very slight drift, "almost there but not quite"
-    0.40, // layer2
-    0.25, // layer1   - deepest stars
+    0.05, // 0: planet      - user override: only slight drift
+    0.30, // 1: asteroids   - mid-distance
+    0.22, // 2: space_gas   - distant nebula
+    0.55, // 3: layer3      - closest stars
+    0.40, // 4: layer2      - mid stars
+    0.00, // 5: galaxy      - static, fixed to viewport
+    0.00, // 6: galaxy3     - static, fixed to viewport
+    0.25, // 7: layer1      - deepest stars
 ];
 
-// Anchor positions for the no-repeat layers (galaxy, galaxy3, planet).
-// CENTERED layers ignore their anchor X/Y and snap to viewport centre with
-// the layer's image dimensions accounted for. Used for the planet so it
-// always sits in the middle of the viewport, drifting only by speed.
+// Anchor positions used only by no-repeat tiled layers that aren't centred.
 const PARALLAX_BASES = [
-    [0, 0],          // layer3
-    [-340, -180],    // galaxy
-    [380, 220],      // galaxy3
+    [0, 0],          // planet (centred, anchor unused)
     [0, 0],          // asteroids
     [0, 0],          // space_gas
-    [0, 0],          // planet (anchor unused; centred by PARALLAX_CENTER)
+    [0, 0],          // layer3
     [0, 0],          // layer2
+    [-340, -180],    // galaxy A
+    [380, 220],      // galaxy B
     [0, 0],          // layer1
 ];
 
-// Per-layer image natural size, used by CENTER mode to half-offset.
+// Per-layer rendered size in CSS pixels. Used by CENTER mode to compute
+// the half-offset that pulls the image's centre to viewport centre.
 const PARALLAX_IMG_SIZE = [
-    480, 480, 480, 960, 720, 480, 480, 480,
+    1440,  // planet (3x natural, dominant centerpiece)
+    960,   // asteroids
+    720,   // space_gas
+    480,   // layer3
+    480,   // layer2
+    480,   // galaxy
+    480,   // galaxy3
+    480,   // layer1
 ];
 
-// Indexes (in the layer order) of layers that should sit at viewport centre.
-const PARALLAX_CENTER = new Set([5]); // planet
+// Indexes (in the new layer order) of layers that snap to viewport centre.
+const PARALLAX_CENTER = new Set([0]); // planet
 
 function updateParallax() {
     if (!state.map) return;

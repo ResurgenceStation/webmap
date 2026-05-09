@@ -169,36 +169,47 @@ body {
    `background-position` is rewritten on every map pan by main.js
    (see updateParallax). The values here are the PARALLAX_BASES anchors;
    main.js adds the per-layer pan delta on top. */
+/* Layer order matches the game's BYOND `layer` values from
+   code/_onclick/hud/parallax.dm. Higher layer = drawn on top in BYOND;
+   CSS background-image stacks first-listed on top, so the order below
+   is reversed from add-order in parallax.dm.
+
+   game layer 30 -> planet     (TOP)
+   game layer  3 -> random_layer (asteroids / space_gas)
+   game layer  3 -> layer_3
+   game layer  2 -> layer_2
+   game layer  1 -> galaxy
+   game layer  1 -> layer_1    (BACK) */
 body[data-zname="station"] #map,
 body[data-zname="centcom"] #map {
     background-color: #04040a;
     background-image:
-        url('vendor/parallax_layer3.png'),    /* closest stars */
-        url('vendor/parallax_galaxy.png'),    /* galaxy A */
-        url('vendor/parallax_galaxy3.png'),   /* galaxy B */
-        url('vendor/parallax_asteroids.png'), /* asteroid field, tiles */
-        url('vendor/parallax_space_gas.png'), /* nebula, tiles */
-        url('vendor/parallax_planet.png'),    /* THE planet */
-        url('vendor/parallax_layer2.png'),    /* mid stars */
-        url('vendor/parallax_layer1.png');    /* deepest stars */
+        url('vendor/parallax_planet.png'),    /* layer 30, top */
+        url('vendor/parallax_asteroids.png'), /* layer 3 random */
+        url('vendor/parallax_space_gas.png'), /* layer 3 random */
+        url('vendor/parallax_layer3.png'),    /* layer 3 stars */
+        url('vendor/parallax_layer2.png'),    /* layer 2 stars */
+        url('vendor/parallax_galaxy.png'),    /* layer 1 galaxy A */
+        url('vendor/parallax_galaxy3.png'),   /* layer 1 galaxy B */
+        url('vendor/parallax_layer1.png');    /* layer 1 stars, deepest */
     background-repeat:
-        repeat,
-        no-repeat,
-        no-repeat,
-        repeat,
-        repeat,
-        no-repeat,
-        repeat,
-        repeat;
+        no-repeat,      /* planet */
+        repeat,         /* asteroids */
+        repeat,         /* space_gas */
+        repeat,         /* layer3 */
+        repeat,         /* layer2 */
+        no-repeat,      /* galaxy */
+        no-repeat,      /* galaxy3 */
+        repeat;         /* layer1 */
     background-size:
-        480px 480px,
-        480px 480px,
-        480px 480px,
-        960px 960px,    /* asteroids — tile sparser so they don't fill the viewport */
-        720px 720px,    /* space_gas — tile larger for softer nebula coverage */
-        480px 480px,
-        480px 480px,
-        480px 480px;
+        1440px 1440px,  /* planet — 3x natural, dominant centerpiece */
+        960px 960px,    /* asteroids — sparse tiling */
+        720px 720px,    /* space_gas — soft nebula */
+        480px 480px,    /* layer3 */
+        480px 480px,    /* layer2 */
+        480px 480px,    /* galaxy */
+        480px 480px,    /* galaxy3 */
+        480px 480px;    /* layer1 */
     image-rendering: pixelated;
 }
 
