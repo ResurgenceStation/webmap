@@ -141,6 +141,17 @@ body {
     cursor: crosshair;
 }
 
+/* Pixel-art tiles: nearest-neighbour upscale, no antialiasing, no seams.
+   The pixelated class is set on the tileLayer; Leaflet adds it to every
+   <img>. Both selectors so it works whether Leaflet puts the class on the
+   tile element or its container. */
+.leaflet-tile.pixelated,
+.pixelated .leaflet-tile {
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+}
+
 /* Leaflet tooltip override — slightly more padding, dark theme. */
 .leaflet-tooltip.webmap-tip {
     background: rgba(20, 20, 25, 0.95);

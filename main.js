@@ -128,7 +128,7 @@ function initLeaflet() {
     state.map = L.map($map, {
         crs: L.CRS.Simple,
         minZoom: 0,
-        maxZoom: 7,
+        maxZoom: 9,
         maxBounds: [[-300, -50], [50, 305]],
         zoomSnap: 0.25,
         attributionControl: false,
@@ -145,10 +145,13 @@ function buildTileLayer(z) {
         bounds: TILE_BOUNDS,
         tileSize: TILE_PX,
         minZoom: 0,
-        maxZoom: 7,
+        maxZoom: 9,
         maxNativeZoom: 5,
         noWrap: true,
         tms: false,
+        // Pixel-art tiles. Tells Leaflet to keep nearest-neighbour upscaling
+        // and stops the half-pixel seams between adjacent tiles.
+        className: "pixelated",
     });
 }
 
@@ -185,12 +188,14 @@ async function switchZ(z) {
 
 // ─── latlng → BYOND tile ────────────────────────────────────────────────────
 //
-// CRS.Simple with bounds [[-256, 0], [0, 256]] makes 1 latlng unit == 1 BYOND
-// tile. Mirroring slimbus's tg2leaf inverse: lat = y - 255, lng = x. We use
-// byond_height instead of a hard 255 so future bigger maps still work.
+// Slimbus's tg2leaf draws BYOND tile (x, y) as a polygon with corners at
+// (lng=x, lat=y-255) and (lng=x-1, lat=y-1-255). So the tile occupies
+// lng [x-1, x] and lat [y-1-255, y-255]. Inverse:
+//   x = floor(lng) + 1
+//   y = floor(lat) + byond_height + 1
 function latlngToByond(latlng) {
     const zl = state.manifest.z_levels.find(x => x.id === state.currentZ);
-    const tx = Math.floor(latlng.lng);
+    const tx = Math.floor(latlng.lng) + 1;
     const ty = Math.floor(latlng.lat) + zl.byond_height + 1;
     if (tx < 1 || tx > zl.byond_width) return null;
     if (ty < 1 || ty > zl.byond_height) return null;
@@ -376,11 +381,11 @@ async function onSearch() {
 async function jumpTo(z, x, y) {
     if (z !== state.currentZ) await switchZ(z);
     const zl = state.manifest.z_levels.find(zz => zz.id === z);
-    // Inverse of latlngToByond: lat = y - byond_height, lng = x. Centre the
-    // tile by adding 0.5.
-    const lat = (y - zl.byond_height) + 0.5;
-    const lng = x + 0.5;
-    state.map.setView([lat, lng], 6);
+    // Tile (x, y) covers lng [x-1, x] and lat [y-1-byond_height, y-byond_height].
+    // Centre = (x - 0.5, y - byond_height - 0.5).
+    const lat = (y - zl.byond_height) - 0.5;
+    const lng = x - 0.5;
+    state.map.setView([lat, lng], 7);
     pin({ x, y, z, entries: visibleEntries(entriesAt(z, x, y)) });
 }
 
