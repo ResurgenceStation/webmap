@@ -1,0 +1,158 @@
+/* HippieStation webmap — minimal styling. */
+
+* { box-sizing: border-box; }
+
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font: 13px/1.4 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: #111;
+    color: #ddd;
+}
+
+body {
+    display: grid;
+    grid-template:
+        "topbar topbar"  44px
+        "side   map"     1fr / 280px 1fr;
+    height: 100vh;
+}
+
+.topbar {
+    grid-area: topbar;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 0 16px;
+    background: #1c1c20;
+    border-bottom: 1px solid #2c2c33;
+}
+
+.topbar h1 {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0;
+    color: #eee;
+    flex: 0 0 auto;
+}
+
+.topbar label { font-size: 12px; color: #aaa; }
+
+.topbar select,
+.topbar input[type="search"] {
+    margin-left: 6px;
+    background: #2a2a31;
+    color: #eee;
+    border: 1px solid #3a3a44;
+    border-radius: 3px;
+    padding: 3px 8px;
+    font: inherit;
+}
+
+.topbar input[type="search"] { width: 220px; }
+
+.status {
+    margin-left: auto;
+    color: #888;
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+}
+
+.sidebar {
+    grid-area: side;
+    overflow-y: auto;
+    background: #16161a;
+    border-right: 1px solid #2c2c33;
+    padding: 12px;
+}
+
+.panel + .panel { margin-top: 18px; }
+
+.panel h2 {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #777;
+    margin: 0 0 8px;
+}
+
+.hint {
+    margin: 0 0 8px;
+    color: #666;
+    font-size: 11px;
+}
+
+.filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 10px;
+}
+
+.filters label {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.filters input[type=checkbox] { accent-color: #4080c0; }
+
+#pinned-list, #search-results { list-style: none; padding: 0; margin: 0; }
+
+#pinned-list li, #search-results li {
+    padding: 6px 8px;
+    background: #1f1f25;
+    border: 1px solid #2c2c33;
+    border-radius: 3px;
+    margin-bottom: 6px;
+    font-size: 12px;
+}
+
+.entry-name { font-weight: 600; color: #fff; }
+.entry-coord { color: #888; font-size: 10px; margin-left: 6px; }
+.entry-desc { color: #bbb; margin-top: 4px; }
+.entry-type { color: #6699bb; font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 10px; }
+.entry-cat {
+    display: inline-block;
+    padding: 0 5px;
+    border-radius: 2px;
+    background: #2c2c33;
+    color: #aaa;
+    font-size: 10px;
+    margin-left: 4px;
+}
+
+.pin-remove, .result-jump {
+    cursor: pointer;
+    background: none;
+    border: 0;
+    color: #888;
+    padding: 0 4px;
+    float: right;
+}
+.pin-remove:hover, .result-jump:hover { color: #eee; }
+
+#map {
+    grid-area: map;
+    background: #000;
+    cursor: crosshair;
+}
+
+/* Leaflet tooltip override — slightly more padding, dark theme. */
+.leaflet-tooltip.webmap-tip {
+    background: rgba(20, 20, 25, 0.95);
+    color: #eee;
+    border: 1px solid #3a3a44;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+    padding: 6px 8px;
+    font-size: 12px;
+    max-width: 320px;
+    white-space: normal;
+}
+.leaflet-tooltip.webmap-tip:before { display: none; }
+
+.tip-coord { color: #888; font-size: 10px; margin-bottom: 4px; }
+.tip-entry + .tip-entry { margin-top: 5px; padding-top: 5px; border-top: 1px solid #2c2c33; }

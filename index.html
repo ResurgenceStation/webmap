@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>HippieStation Webmap</title>
+
+    <!-- The tiles host (raster + objects.json + manifest.json). Edit if
+         self-hosting or running locally; main.js reads this attribute. -->
+    <meta name="webmap:tiles-base" content="https://tiles.owo.fm/hippiestation">
+
+    <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+    <h1>HippieStation Webmap</h1>
+    <label class="z-switcher">
+        Z-level
+        <select id="z-select"></select>
+    </label>
+    <label class="search">
+        <input id="search-input" type="search" placeholder="Search by name…" autocomplete="off">
+    </label>
+    <span id="status" class="status">loading…</span>
+</header>
+
+<aside class="sidebar">
+    <section class="panel">
+        <h2>Layers</h2>
+        <div id="layer-filters" class="filters">
+            <!-- checkbox per category, populated by main.js -->
+        </div>
+    </section>
+
+    <section class="panel">
+        <h2>Pinned</h2>
+        <p class="hint">Click a tile to pin it. Click ✕ to remove.</p>
+        <ul id="pinned-list"></ul>
+    </section>
+
+    <section class="panel" id="search-results-panel" hidden>
+        <h2>Search results</h2>
+        <ul id="search-results"></ul>
+    </section>
+</aside>
+
+<main id="map"></main>
+
+<script src="vendor/leaflet/leaflet.js"></script>
+<script src="main.js"></script>
+</body>
+</html>
