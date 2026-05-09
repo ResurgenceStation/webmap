@@ -68,7 +68,7 @@ async function init() {
         setStatus("manifest contains no z-levels");
         return;
     }
-    initLeaflet(firstZ);
+    initLeaflet();
     await switchZ(firstZ);
 
     $zSelect.addEventListener("change", () => switchZ(parseInt($zSelect.value, 10)));
@@ -114,44 +114,41 @@ function populateLayerFilters() {
 
 // ─── Leaflet init ───────────────────────────────────────────────────────────
 //
-// CRS.Simple maps "map space" 1:1 to Leaflet LatLng. We set up the bounds so
-// the rendered map's top-left is (0, 0) and bottom-right is (-h_px, w_px) in
-// (lat, lng). That gives us:
-//   lng  = pixel x   from the left
-//   -lat = pixel y   from the top
-// which is exactly what tile.py emits and exactly what we need to invert into
-// BYOND tile coords on hover.
-function initLeaflet(z) {
-    const zl = state.manifest.z_levels.find(x => x.id === z);
-    const wPx = zl.byond_width  * state.manifest.px_per_byond_tile;
-    const hPx = zl.byond_height * state.manifest.px_per_byond_tile;
+// CRS.Simple. Tile pyramid is always padded to a 256-multiple at the source,
+// so 1 latlng unit at zoom 0 == 1 BYOND tile == 1 pixel at zoom 0 == 32
+// source pixels at zoom 5. This matches slimbus's working webmap so the same
+// layer math (tg2leaf: lat = y - 255, lng = x) is reusable.
+//
+//   bounds:    [[-256, 0], [0, 256]]
+//   maxNative: 5   (pyramid stops here)
+//   max:       7   (Leaflet upscales for close zoom, no extra fetches)
+const TILE_BOUNDS = [[-256, 0], [0, 256]];
 
+function initLeaflet() {
     state.map = L.map($map, {
         crs: L.CRS.Simple,
-        minZoom: state.manifest.min_zoom ?? 0,
-        maxZoom: state.manifest.max_zoom ?? 5,
+        minZoom: 0,
+        maxZoom: 7,
+        maxBounds: [[-300, -50], [50, 305]],
         zoomSnap: 0.25,
         attributionControl: false,
+        preferCanvas: true,
     });
 
-    state.map.fitBounds([[-hPx, 0], [0, wPx]]);
+    state.map.setView([-128, 128], 2);
     state.map.on("mousemove", onMouseMove);
     state.map.on("click",     onMapClick);
-    // Throttle by latching the most recent mousemove and processing on rAF.
 }
 
 function buildTileLayer(z) {
-    const zl = state.manifest.z_levels.find(x => x.id === z);
-    const wPx = zl.byond_width  * state.manifest.px_per_byond_tile;
-    const hPx = zl.byond_height * state.manifest.px_per_byond_tile;
-
     return L.tileLayer(`${TILES_BASE}/${z}/{z}/{x}/{y}.png`, {
-        bounds: [[-hPx, 0], [0, wPx]],
+        bounds: TILE_BOUNDS,
         tileSize: TILE_PX,
-        minZoom: state.manifest.min_zoom ?? 0,
-        maxZoom: state.manifest.max_zoom ?? 5,
+        minZoom: 0,
+        maxZoom: 7,
+        maxNativeZoom: 5,
         noWrap: true,
-        errorTileUrl: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
+        tms: false,
     });
 }
 
@@ -165,11 +162,7 @@ async function switchZ(z) {
     state.tileLayer = buildTileLayer(z);
     state.tileLayer.addTo(state.map);
 
-    // Re-fit bounds for the new z (z-levels can have different sizes).
     const zl = state.manifest.z_levels.find(x => x.id === z);
-    const wPx = zl.byond_width  * state.manifest.px_per_byond_tile;
-    const hPx = zl.byond_height * state.manifest.px_per_byond_tile;
-    state.map.fitBounds([[-hPx, 0], [0, wPx]]);
 
     // Lazy-load objects.json for this z if we haven't seen it yet.
     if (!state.objectsByZ[z]) {
@@ -190,21 +183,15 @@ async function switchZ(z) {
     setStatus(`z=${z} (${zl.name}) ready`);
 }
 
-// ─── Pixel → BYOND tile translation ────────────────────────────────────────
+// ─── latlng → BYOND tile ────────────────────────────────────────────────────
 //
-// L.CRS.Simple gives us latlng in map-pixel units; we set bounds [[-h,0],[0,w]]
-// so x = lng, y = -lat. BYOND is 1-indexed and y points north (highest y is at
-// the top of the rendered PNG, since dmm-tools emits north-up).
+// CRS.Simple with bounds [[-256, 0], [0, 256]] makes 1 latlng unit == 1 BYOND
+// tile. Mirroring slimbus's tg2leaf inverse: lat = y - 255, lng = x. We use
+// byond_height instead of a hard 255 so future bigger maps still work.
 function latlngToByond(latlng) {
-    const ppt = state.manifest.px_per_byond_tile;
     const zl = state.manifest.z_levels.find(x => x.id === state.currentZ);
-
-    const px_x = latlng.lng;
-    const px_y = -latlng.lat;
-    const tx = Math.floor(px_x / ppt) + 1;
-    const ty_from_top = Math.floor(px_y / ppt);
-    const ty = zl.byond_height - ty_from_top;
-
+    const tx = Math.floor(latlng.lng);
+    const ty = Math.floor(latlng.lat) + zl.byond_height + 1;
     if (tx < 1 || tx > zl.byond_width) return null;
     if (ty < 1 || ty > zl.byond_height) return null;
     return { x: tx, y: ty };
@@ -388,12 +375,12 @@ async function onSearch() {
 
 async function jumpTo(z, x, y) {
     if (z !== state.currentZ) await switchZ(z);
-    const ppt = state.manifest.px_per_byond_tile;
     const zl = state.manifest.z_levels.find(zz => zz.id === z);
-    // Centre the BYOND tile in the viewport.
-    const px_x = (x - 0.5) * ppt;
-    const px_y_from_top = (zl.byond_height - y + 0.5) * ppt;
-    state.map.setView([-px_y_from_top, px_x], state.manifest.max_zoom ?? 5);
+    // Inverse of latlngToByond: lat = y - byond_height, lng = x. Centre the
+    // tile by adding 0.5.
+    const lat = (y - zl.byond_height) + 0.5;
+    const lng = x + 0.5;
+    state.map.setView([lat, lng], 6);
     pin({ x, y, z, entries: visibleEntries(entriesAt(z, x, y)) });
 }
 
