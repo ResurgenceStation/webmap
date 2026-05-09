@@ -205,11 +205,22 @@ body[data-zname="lavaland"] #map {
         #1a0a05;
 }
 
-/* Pixel-art tiles. Match slimbus exactly: just image-rendering, nothing else.
-   Earlier attempts at transform/outline/will-change made it worse in Chrome. */
+/* Pixel-art tiles. Match slimbus exactly: just image-rendering, nothing else. */
 img {
     image-rendering: crisp-edges;
     image-rendering: pixelated;
+}
+
+/* Override Leaflet 1.9.x's default tile compositing.
+   Leaflet ships `.leaflet-container img.leaflet-tile { mix-blend-mode: plus-lighter }`
+   which additively blends each tile's RGBA with whatever sits behind it,
+   clamped to white. Slimbus has a black #map background so the addition
+   is a no-op. We have a bright parallax behind tiles, so the additive
+   blend turns every tile-edge anti-alias pixel into saturated white --
+   visible as continuous white seams between tiles. Force normal alpha
+   compositing to fix it. */
+.leaflet-container img.leaflet-tile {
+    mix-blend-mode: normal;
 }
 
 /* Leaflet tooltip override — dark theme, comfortable width. min-width

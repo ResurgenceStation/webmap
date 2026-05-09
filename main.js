@@ -125,13 +125,14 @@ function populateLayerFilters() {
 const TILE_BOUNDS = [[-256, 0], [0, 256]];
 
 function initLeaflet() {
-    // Match slimbus exactly: maxZoom: 7 on map and tileLayer. Going past 7
-    // forces Leaflet to upscale tiles 4x+ which is what causes the visible
-    // tile seams in Chrome. Default zoomSnap (1) for integer-only zoom.
+    // maxZoom: 9 with maxNativeZoom: 5 lets the user zoom in 4 levels past
+    // the natural pyramid for close inspection. The seam-on-zoom issue we
+    // saw earlier was a different bug (Leaflet's plus-lighter blend against
+    // the parallax) and is fixed in style.css.
     state.map = L.map($map, {
         crs: L.CRS.Simple,
         minZoom: 0,
-        maxZoom: 7,
+        maxZoom: 9,
         maxBounds: [[-300, -50], [50, 305]],
         attributionControl: false,
         preferCanvas: true,
@@ -147,7 +148,7 @@ function buildTileLayer(z) {
         bounds: TILE_BOUNDS,
         tileSize: TILE_PX,
         minZoom: 0,
-        maxZoom: 7,
+        maxZoom: 9,
         maxNativeZoom: 5,
         noWrap: true,
         tms: false,
