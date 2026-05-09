@@ -208,8 +208,11 @@ function updateParallax() {
         const x = PARALLAX_BASES[i][0] + dx * s;
         const y = PARALLAX_BASES[i][1] + dy * s;
         if (PARALLAX_CENTER.has(i)) {
-            const half = PARALLAX_IMG_SIZE[i] / 2;
-            return `calc(50% - ${half}px + ${x.toFixed(0)}px) calc(50% - ${half}px + ${y.toFixed(0)}px)`;
+            // CSS `<percentage>` in background-position aligns the image's
+            // own percentage point with the element's percentage point, so
+            // 50% 50% always centres regardless of image vs element size.
+            // Drift in px is added to that anchor.
+            return `calc(50% + ${x.toFixed(0)}px) calc(50% + ${y.toFixed(0)}px)`;
         }
         return `${x.toFixed(0)}px ${y.toFixed(0)}px`;
     });
