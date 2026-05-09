@@ -164,28 +164,39 @@ const PARALLAX_SPEEDS = [
     0.25, // layer1   - deepest stars
 ];
 
-// Anchor positions for the no-repeat layers (galaxy, galaxy3, planet)
-// so they sit at scenic spots when the map is centred.
+// Anchor positions for the no-repeat layers (galaxy, galaxy3, planet).
+// CENTERED layers ignore their anchor X/Y and snap to viewport centre with
+// the layer's image dimensions accounted for. Used for the planet so it
+// always sits in the middle of the viewport, drifting only by speed.
 const PARALLAX_BASES = [
     [0, 0],          // layer3
     [-340, -180],    // galaxy
     [380, 220],      // galaxy3
     [0, 0],          // asteroids
     [0, 0],          // space_gas
-    [220, -160],     // planet
+    [0, 0],          // planet (anchor unused; centred by PARALLAX_CENTER)
     [0, 0],          // layer2
     [0, 0],          // layer1
 ];
 
+// Per-layer image natural size, used by CENTER mode to half-offset.
+const PARALLAX_IMG_SIZE = [
+    480, 480, 480, 960, 720, 480, 480, 480,
+];
+
+// Indexes (in the layer order) of layers that should sit at viewport centre.
+const PARALLAX_CENTER = new Set([5]); // planet
+
 function updateParallax() {
     if (!state.map) return;
-    // Internal API but stable across Leaflet 1.x: pixel offset of the map
-    // pane relative to the container. Negative as the user pans content
-    // toward positive screen coords.
     const pos = state.map._getMapPanePos();
     const parts = PARALLAX_SPEEDS.map((s, i) => {
         const x = PARALLAX_BASES[i][0] + pos.x * s;
         const y = PARALLAX_BASES[i][1] + pos.y * s;
+        if (PARALLAX_CENTER.has(i)) {
+            const half = PARALLAX_IMG_SIZE[i] / 2;
+            return `calc(50% - ${half}px + ${x.toFixed(0)}px) calc(50% - ${half}px + ${y.toFixed(0)}px)`;
+        }
         return `${x.toFixed(0)}px ${y.toFixed(0)}px`;
     });
     $map.style.backgroundPosition = parts.join(", ");
