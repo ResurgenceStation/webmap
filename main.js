@@ -192,12 +192,21 @@ const PARALLAX_IMG_SIZE = [
 // Indexes (in the new layer order) of layers that snap to viewport centre.
 const PARALLAX_CENTER = new Set([0]); // planet
 
+// Captured on the first updateParallax call. Leaflet's initial centering
+// produces a non-zero pane offset; without baselining, every layer would
+// start already drifted from its anchor and the centred planet would
+// appear off-centre on page load.
+let parallaxBaseline = null;
+
 function updateParallax() {
     if (!state.map) return;
     const pos = state.map._getMapPanePos();
+    if (!parallaxBaseline) parallaxBaseline = { x: pos.x, y: pos.y };
+    const dx = pos.x - parallaxBaseline.x;
+    const dy = pos.y - parallaxBaseline.y;
     const parts = PARALLAX_SPEEDS.map((s, i) => {
-        const x = PARALLAX_BASES[i][0] + pos.x * s;
-        const y = PARALLAX_BASES[i][1] + pos.y * s;
+        const x = PARALLAX_BASES[i][0] + dx * s;
+        const y = PARALLAX_BASES[i][1] + dy * s;
         if (PARALLAX_CENTER.has(i)) {
             const half = PARALLAX_IMG_SIZE[i] / 2;
             return `calc(50% - ${half}px + ${x.toFixed(0)}px) calc(50% - ${half}px + ${y.toFixed(0)}px)`;
