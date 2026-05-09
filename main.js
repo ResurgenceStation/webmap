@@ -167,7 +167,7 @@ const PARALLAX_SPEEDS = [
 // Anchor positions used only by no-repeat tiled layers that aren't centred.
 const PARALLAX_BASES = [
     [0, 0],          // planet (centred, anchor unused)
-    [0, 0],          // asteroids
+    [420, -260],     // asteroids - upper-right, away from planet's lower-left
     [0, 0],          // space_gas
     [0, 0],          // layer3
     [0, 0],          // layer2

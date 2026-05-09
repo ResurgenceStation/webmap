@@ -194,7 +194,7 @@ body[data-zname="centcom"] #map {
         url('vendor/parallax_layer1.png');    /* layer 1 stars, deepest */
     background-repeat:
         no-repeat,      /* planet */
-        repeat,         /* asteroids */
+        no-repeat,      /* asteroids - single anchor away from planet */
         repeat,         /* space_gas */
         repeat,         /* layer3 */
         repeat,         /* layer2 */
