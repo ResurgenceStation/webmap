@@ -125,13 +125,14 @@ function populateLayerFilters() {
 const TILE_BOUNDS = [[-256, 0], [0, 256]];
 
 function initLeaflet() {
+    // Match slimbus exactly: maxZoom: 7 on map and tileLayer. Going past 7
+    // forces Leaflet to upscale tiles 4x+ which is what causes the visible
+    // tile seams in Chrome. Default zoomSnap (1) for integer-only zoom.
     state.map = L.map($map, {
         crs: L.CRS.Simple,
         minZoom: 0,
-        maxZoom: 9,
+        maxZoom: 7,
         maxBounds: [[-300, -50], [50, 305]],
-        // Default zoomSnap (1). Fractional zooms break pixel-perfect tile
-        // alignment and visibly seam adjacent tiles -- match slimbus.
         attributionControl: false,
         preferCanvas: true,
     });
@@ -146,7 +147,7 @@ function buildTileLayer(z) {
         bounds: TILE_BOUNDS,
         tileSize: TILE_PX,
         minZoom: 0,
-        maxZoom: 9,
+        maxZoom: 7,
         maxNativeZoom: 5,
         noWrap: true,
         tms: false,
@@ -388,7 +389,7 @@ async function jumpTo(z, x, y) {
     // Centre = (x - 0.5, y - byond_height - 0.5).
     const lat = (y - zl.byond_height) - 0.5;
     const lng = x - 0.5;
-    state.map.setView([lat, lng], 7);
+    state.map.setView([lat, lng], 6);
     pin({ x, y, z, entries: visibleEntries(entriesAt(z, x, y)) });
 }
 

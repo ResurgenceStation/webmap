@@ -147,30 +147,30 @@ body {
     grid-area: map;
     cursor: crosshair;
     background: #000;
-    background-size: 512px 512px;
-    background-repeat: repeat;
-    background-attachment: local;
 }
 
 /* Per-z-level background. Body data-zname is set by switchZ in main.js.
-   Layer order matches the in-game parallax composition from
-   code/_onclick/hud/parallax.dm:22-29 -- back to front:
-       layer_1 -> layer_2 -> planet -> space_gas -> galaxy -> layer_3
-   CSS background-image paints first-listed on top, so the list below is in
-   reverse (front to back). Star layers tile; planet and galaxy are scenic
-   one-offs and don't repeat. */
+   Layer order matches code/_onclick/hud/parallax.dm:22-29. In-game one
+   random-layer (space_gas|asteroids) and one random-galaxy (1..4) are
+   picked, but for the static webmap we show all of them at distinct,
+   non-overlapping anchor positions so every map session looks the same.
+   CSS paints first-listed on top, so list below is front-to-back. */
 body[data-zname="station"] #map,
 body[data-zname="centcom"] #map {
     background-color: #04040a;
     background-image:
-        url('vendor/parallax_layer3.png'),
-        url('vendor/parallax_galaxy.png'),
-        url('vendor/parallax_space_gas.png'),
-        url('vendor/parallax_planet.png'),
-        url('vendor/parallax_layer2.png'),
-        url('vendor/parallax_layer1.png');
+        url('vendor/parallax_layer3.png'),    /* closest stars */
+        url('vendor/parallax_galaxy.png'),    /* random_galaxy pick 1 */
+        url('vendor/parallax_galaxy3.png'),   /* random_galaxy pick 2 */
+        url('vendor/parallax_asteroids.png'), /* random_layer asteroids */
+        url('vendor/parallax_space_gas.png'), /* random_layer space_gas */
+        url('vendor/parallax_planet.png'),    /* THE planet (red sphere) */
+        url('vendor/parallax_layer2.png'),    /* mid stars */
+        url('vendor/parallax_layer1.png');    /* deepest stars */
     background-repeat:
         repeat,
+        no-repeat,
+        no-repeat,
         no-repeat,
         repeat,
         no-repeat,
@@ -178,12 +178,16 @@ body[data-zname="centcom"] #map {
         repeat;
     background-position:
         0 0,
-        18% 28%,
+        15% 22%,
+        78% 12%,
+        62% 78%,
         0 0,
-        72% 64%,
+        38% 58%,
         0 0,
         0 0;
     background-size:
+        480px 480px,
+        480px 480px,
         480px 480px,
         480px 480px,
         480px 480px,
