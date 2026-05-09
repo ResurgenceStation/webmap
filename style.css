@@ -194,8 +194,8 @@ body[data-zname="centcom"] #map {
         480px 480px,
         480px 480px,
         480px 480px,
-        480px 480px,
-        480px 480px,
+        960px 960px,    /* asteroids — tile sparser so they don't fill the viewport */
+        720px 720px,    /* space_gas — tile larger for softer nebula coverage */
         480px 480px,
         480px 480px,
         480px 480px;

@@ -157,8 +157,8 @@ const PARALLAX_SPEEDS = [
     0.55, // layer3   - close stars
     0.10, // galaxy   - very far
     0.10, // galaxy3  - very far
-    0.45, // asteroids
-    0.30, // space_gas (nebula)
+    0.30, // asteroids - mid-distance, less prominent than close stars
+    0.22, // space_gas (nebula) - distant gas
     0.18, // planet
     0.40, // layer2
     0.25, // layer1   - deepest stars
