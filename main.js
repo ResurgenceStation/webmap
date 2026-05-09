@@ -208,8 +208,10 @@ function updateParallax() {
         const x = PARALLAX_BASES[i][0] + dx * s;
         const y = PARALLAX_BASES[i][1] + dy * s;
         if (PARALLAX_CENTER.has(i)) {
-            // 30%/30% biases the planet 20% up-and-left of viewport centre.
-            return `calc(30% + ${x.toFixed(0)}px) calc(30% + ${y.toFixed(0)}px)`;
+            // Match the game: screen_loc = "CENTER-7,CENTER-7" anchors the
+            // planet 7 BYOND tiles left and 7 down from screen centre. At
+            // 32 px per tile that's 224 px. Drift in px is added on top.
+            return `calc(50% - 224px + ${x.toFixed(0)}px) calc(50% + 224px + ${y.toFixed(0)}px)`;
         }
         return `${x.toFixed(0)}px ${y.toFixed(0)}px`;
     });
