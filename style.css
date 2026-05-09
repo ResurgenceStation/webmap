@@ -184,32 +184,32 @@ body[data-zname="station"] #map,
 body[data-zname="centcom"] #map {
     background-color: #04040a;
     background-image:
-        url('vendor/parallax_layer3.png'),    /* closest stars - front */
-        url('vendor/parallax_asteroids.png'), /* tiled asteroid field */
+        url('vendor/parallax_asteroids.png'), /* tiled, in front */
+        url('vendor/parallax_planet.png'),    /* big, behind asteroids */
         url('vendor/parallax_space_gas.png'), /* tiled nebula */
+        url('vendor/parallax_layer3.png'),    /* closest stars */
         url('vendor/parallax_layer2.png'),    /* mid stars */
         url('vendor/parallax_galaxy.png'),    /* galaxy A */
         url('vendor/parallax_galaxy3.png'),   /* galaxy B */
-        url('vendor/parallax_layer1.png'),    /* deepest stars */
-        url('vendor/parallax_planet.png');    /* planet - back */
+        url('vendor/parallax_layer1.png');    /* deepest stars - back */
     background-repeat:
-        repeat,         /* layer3 */
         repeat,         /* asteroids - tiled */
+        no-repeat,      /* planet */
         repeat,         /* space_gas - tiled */
+        repeat,         /* layer3 */
         repeat,         /* layer2 */
         no-repeat,      /* galaxy */
         no-repeat,      /* galaxy3 */
-        repeat,         /* layer1 */
-        no-repeat;      /* planet */
+        repeat;         /* layer1 */
     background-size:
-        480px 480px,    /* layer3 */
         960px 960px,    /* asteroids */
+        1440px 1440px,  /* planet - big */
         720px 720px,    /* space_gas */
+        480px 480px,    /* layer3 */
         480px 480px,    /* layer2 */
         480px 480px,    /* galaxy */
         480px 480px,    /* galaxy3 */
-        480px 480px,    /* layer1 */
-        1440px 1440px;  /* planet - big, in the back */
+        480px 480px;    /* layer1 */
     image-rendering: pixelated;
 }
 
